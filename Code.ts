@@ -54,6 +54,8 @@ function initEndDocument(docId) {
 function createEndDocument(folder_id): Body {
   docName = Utilities.formatString("APA Surgery Note %s", today());
   baseDocId = DocumentApp.create(docName).getId();
+  DriveApp.getFileById(baseDocId).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.NONE);
+
   moveFileToFolder(baseDocId, folder_id);
   return baseDocId;
 }
