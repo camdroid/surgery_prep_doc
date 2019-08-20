@@ -1,17 +1,7 @@
-// APA Surgery Prep
+// APA Surgery Prep - Doc
 
-import {BodyHelper} from "./BodyHelper";
-
-function parseAnimalData(animalData, spreadsheetHeaders) {
-  if (spreadsheetHeaders == null || animalData == null || spreadsheetHeaders.length !== animalData.length) {
-    log("Header length doesn't match data length", true);
-  }
-  parsedAnimalData = {};
-  for (var i=0; i<spreadsheetHeaders.length; i++) {
-     parsedAnimalData[spreadsheetHeaders[i]] = animalData[i];
-  }
-  return parsedAnimalData;
-}
+const util = apalibrary;
+const today = util.today;
 
 function insertDataIntoTemplate(template, data) {
   Object.keys(data).forEach(field => {
@@ -19,35 +9,12 @@ function insertDataIntoTemplate(template, data) {
   });
 }
 
-function log(data, debug) {
-  if (debug == null) {
-    debug = true;
-  }
-  if (debug) {
-    Logger.log(data);
-  }
-}
-
-const today = () => Utilities.formatDate(new Date(), "CDT", "YYYY-MM-dd");
-
-function moveFileToFolder(file_id, folder_id): null {
-  folder = DriveApp.getFolderById(folder_id);
-  baseDocFile = DriveApp.getFileById(baseDocId);
-
-  folder.addFile(baseDocFile);
-  DriveApp.getRootFolder().removeFile(baseDocFile);
-}
-
 function initEndDocument(docId) {
   var baseDoc = DocumentApp.openById(baseDocId);
   baseDoc.getBody().clear();
   const margin = 30;
   var body = baseDoc.getActiveSection();
-  body.setMarginLeft(margin);
-  body.setMarginRight(margin);
-  body.setMarginTop(margin);
-  body.setMarginBottom(margin);
-
+  body = util.setBodyMargin(body, 30);
   return body;
 }
 
@@ -56,12 +23,12 @@ function createEndDocument(folder_id): Body {
   baseDocId = DocumentApp.create(docName).getId();
   DriveApp.getFileById(baseDocId).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.NONE);
 
-  moveFileToFolder(baseDocId, folder_id);
+  util.moveFileToFolder(baseDocId, folder_id);
   return baseDocId;
 }
 
 function mergeFilesInFolder(folder_id: number) {
-  log("Merging files");
+  util.log("Merging files");
   folder = DriveApp.getFolderById(folder_id);
   files = folder.getFiles();
   docIDs = [];
@@ -103,7 +70,7 @@ function generateSurgeryDoc() {
   outputFolder = DriveApp.getFolderById(OUTPUT_FOLDER_ID);
 
   for(var i=0; i<allAnimalData.values.length; i++) {
-    structuredData = parseAnimalData(allAnimalData.values[i], spreadsheetHeaders);
+    structuredData = util.parseSpreadsheetData(allAnimalData.values[i], spreadsheetHeaders);
 
     templateID = DriveApp.getFileById(TEMPLATE_DOC_ID).makeCopy('output'+i, outputFolder).getId();
     templateBody = DocumentApp.openById(templateID).getBody();
